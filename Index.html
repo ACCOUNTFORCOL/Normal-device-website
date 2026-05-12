@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Normal Device?</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:monospace;
+}
+
+body{
+overflow:hidden;
+background:black;
+color:white;
+height:100vh;
+background-image:url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop');
+background-size:cover;
+background-position:center;
+}
+
+#boot{
+position:absolute;
+inset:0;
+background:black;
+display:flex;
+justify-content:center;
+align-items:center;
+flex-direction:column;
+z-index:999;
+}
+
+#desktop{
+display:none;
+width:100%;
+height:100%;
+position:relative;
+}
+
+.window{
+position:absolute;
+width:320px;
+background:#111;
+border:2px solid white;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+padding:10px;
+}
+
+.titlebar{
+background:white;
+color:black;
+padding:5px;
+margin:-10px -10px 10px -10px;
+font-weight:bold;
+}
+
+button{
+background:black;
+color:white;
+border:1px solid white;
+padding:6px 12px;
+margin-top:10px;
+cursor:pointer;
+}
+
+input{
+width:100%;
+padding:8px;
+margin-top:10px;
+background:black;
+color:white;
+border:1px solid white;
+}
+
+.icon{
+width:80px;
+text-align:center;
+cursor:pointer;
+margin:15px;
+}
+
+.icon img{
+width:64px;
+height:64px;
+}
+
+#icons{
+display:flex;
+flex-wrap:wrap;
+padding:20px;
+}
+
+#errorBox{
+display:none;
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:#111;
+border:2px solid red;
+padding:20px;
+z-index:1000;
+width:300px;
+}
+
+#jumpscare{
+display:none;
+position:absolute;
+inset:0;
+background:url('https://i.imgur.com/8fK4h6G.jpeg') center/cover;
+z-index:5000;
+}
+
+#gameCanvas{
+background:black;
+border:2px solid white;
+display:block;
+margin:auto;
+}
+
+#corrupt{
+display:none;
+position:absolute;
+inset:0;
+background:black;
+color:red;
+font-size:50px;
+justify-content:center;
+align-items:center;
+z-index:4000;
+animation:flicker 0.1s infinite;
+}
+
+@keyframes flicker{
+0%{opacity:1;}
+50%{opacity:0.4;}
+100%{opacity:1;}
+}
+
+#taskbar{
+position:absolute;
+bottom:0;
+width:100%;
+background:#111;
+padding:10px;
+border-top:2px solid white;
+}
+
+.glitch{
+animation:glitch 0.2s infinite;
+}
+
+@keyframes glitch{
+0%{transform:translate(0px);}
+25%{transform:translate(2px,-2px);}
+50%{transform:translate(-2px,2px);}
+75%{transform:translate(2px,2px);}
+100%{transform:translate(0px);}
+}
+</style>
+</head>
+
+<body>
+
+<div id="boot">
+<h1>WELCOME USER</h1>
+<br>
+<button onclick="showRegister()">START</button>
+</div>
+
+<div id="desktop">
+
+<div id="icons">
+
+<div class="icon" onclick="openFiles()">
+<img src="https://cdn-icons-png.flaticon.com/512/716/716784.png">
+<div>Files</div>
+</div>
+
+</div>
+
+<div id="taskbar">
+Normal Device OS
+</div>
+
+</div>
+
+<div id="registerWindow" class="window" style="display:none;">
+<div class="titlebar">Register</div>
+
+<input id="username" placeholder="Username">
+<input type="password" placeholder="Password">
+
+<button onclick="confirmRegister()">Sign Up</button>
+</div>
+
+<div id="confirmWindow" class="window" style="display:none;">
+<div class="titlebar">Warning</div>
+
+<p id="confirmText"></p>
+
+<button onclick="acceptRegister()">Yes</button>
+<button onclick="declineRegister()">No</button>
+</div>
+
+<div id="filesWindow" class="window" style="display:none;">
+<div class="titlebar">Files</div>
+
+<div onclick="openSafeGame()" style="cursor:pointer;">📁 Safegame.exe</div>
+<br>
+
+<div onclick="openAntivirus()" style="cursor:pointer;">📁 Antivirus.exe</div>
+<br>
+
+<div id="mp4File" onclick="openMp4()" style="cursor:pointer;">📁 Openme.mp4</div>
+<br>
+
+<div onclick="fakeZip()" style="cursor:pointer;">📁 U81IA9QO.zip</div>
+
+</div>
+
+<div id="errorBox">
+<p id="errorText"></p>
+<button onclick="closeError()">OK</button>
+</div>
+
+<div id="jumpscare"></div>
+
+<div id="corrupt">
+I AM ANNOYED
+</div>
+
+<div id="gameWindow" class="window" style="display:none; width:500px;">
+<div class="titlebar">Safegame.exe</div>
+
+<canvas id="gameCanvas" width="450" height="300"></canvas>
+
+<p id="gameText">Survive.</p>
+</div>
+
+<script>
+
+let username = "";
+let mp4Count = 0;
+let antivirusInstalled = false;
+let infected = false;
+
+function showRegister(){
+document.getElementById("boot").style.display="none";
+document.getElementById("registerWindow").style.display="block";
+}
+
+function confirmRegister(){
+username=document.getElementById("username").value;
+
+document.getElementById("registerWindow").style.display="none";
+document.getElementById("confirmWindow").style.display="block";
+
+document.getElementById("confirmText").innerText=
+"Are you sure you wanna register as " + username + "?";
+}
+
+function declineRegister(){
+document.getElementById("confirmWindow").style.display="none";
+document.getElementById("registerWindow").style.display="block";
+}
+
+function acceptRegister(){
+
+document.getElementById("confirmWindow").style.display="none";
+
+let scare=document.getElementById("jumpscare");
+
+scare.style.display="block";
+
+setTimeout(()=>{
+scare.style.display="none";
+
+document.getElementById("desktop").style.display="block";
+
+},1000);
+
+}
+
+function openFiles(){
+document.getElementById("filesWindow").style.display="block";
+}
+
+function showError(text){
+document.getElementById("errorBox").style.display="block";
+document.getElementById("errorText").innerText=text;
+}
+
+function closeError(){
+document.getElementById("errorBox").style.display="none";
+}
+
+function openMp4(){
+
+mp4Count++;
+
+if(mp4Count==1){
+showError("This Device Doesn't Support .mp4 files");
+}
+
+else if(mp4Count==2){
+showError("Didn't I say this device doesn't support this type of file?");
+}
+
+else{
+
+showError("STOP THAT THIS DEVICE DOESNT SUPPORT THE SELECTED FILE!");
+
+setTimeout(()=>{
+corruptSystem();
+},1000);
+
+}
+
+}
+
+function corruptSystem(){
+
+document.getElementById("corrupt").style.display="flex";
+
+document.body.classList.add("glitch");
+
+document.body.style.backgroundImage=
+"url('https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop')";
+
+setTimeout(()=>{
+
+document.getElementById("corrupt").style.display="none";
+
+document.getElementById("jumpscare").style.display="block";
+
+setTimeout(()=>{
+
+document.getElementById("jumpscare").style.display="none";
+
+document.getElementById("mp4File").style.display="none";
+
+},1000);
+
+},5000);
+
+}
+
+function openSafeGame(){
+
+if(antivirusInstalled){
+showError("This installation is prohibited by your administrator");
+return;
+}
+
+infected=true;
+
+document.getElementById("gameWindow").style.display="block";
+
+startGame();
+
+}
+
+function openAntivirus(){
+
+if(infected){
+showError("This installation is prevented by your administrator");
+return;
+}
+
+antivirusInstalled=true;
+
+showError("Antivirus Installed Successfully.");
+
+}
+
+function fakeZip(){
+showError("Cannot extract corrupted archive.");
+}
+
+let canvas=document.getElementById("gameCanvas");
+let ctx=canvas.getContext("2d");
+
+let player={
+x:225,
+y:150,
+size:15
+};
+
+let circles=[];
+let keys={};
+let gameOver=false;
+let spawnRate=1000;
+
+document.addEventListener("keydown",(e)=>{
+keys[e.key]=true;
+});
+
+document.addEventListener("keyup",(e)=>{
+keys[e.key]=false;
+});
+
+function spawnCircle(){
+
+circles.push({
+x:Math.random()*450,
+y:-20,
+size:20+Math.random()*20,
+speed:2+Math.random()*5
+});
+
+}
+
+function startGame(){
+
+circles=[];
+gameOver=false;
+
+setInterval(spawnCircle,spawnRate);
+
+updateGame();
+
+setTimeout(()=>{
+massAttack();
+},170000);
+
+}
+
+function updateGame(){
+
+if(gameOver)return;
+
+ctx.clearRect(0,0,450,300);
+
+if(keys["ArrowLeft"])player.x-=5;
+if(keys["ArrowRight"])player.x+=5;
+if(keys["ArrowUp"])player.y-=5;
+if(keys["ArrowDown"])player.y+=5;
+
+ctx.fillStyle="white";
+ctx.fillRect(player.x,player.y,player.size,player.size);
+
+ctx.fillStyle="red";
+
+circles.forEach(c=>{
+
+c.y+=c.speed;
+
+ctx.beginPath();
+ctx.arc(c.x,c.y,c.size,0,Math.PI*2);
+ctx.fill();
+
+let dx=player.x-c.x;
+let dy=player.y-c.y;
+
+let dist=Math.sqrt(dx*dx+dy*dy);
+
+if(dist<c.size){
+loseGame();
+}
+
+});
+
+requestAnimationFrame(updateGame);
+
+}
+
+function loseGame(){
+
+gameOver=true;
+
+document.getElementById("gameText").innerHTML=
+"YOU LOST<br><button onclick='startGame()'>Retry</button>";
+
+}
+
+function massAttack(){
+
+circles=[];
+
+for(let i=0;i<50;i++){
+
+circles.push({
+x:Math.random()*450,
+y:Math.random()*300,
+size:40,
+speed:10
+});
+
+}
+
+setTimeout(()=>{
+
+document.getElementById("gameText").innerHTML=
+"YOU DID LOSE :)<br><button onclick='virusMode()'>RtRy?</button>";
+
+},2000);
+
+}
+
+function virusMode(){
+
+document.body.style.backgroundImage=
+"url('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1200&auto=format&fit=crop')";
+
+setInterval(()=>{
+
+document.body.style.filter=
+"hue-rotate(" + Math.random()*360 + "deg)";
+
+},100);
+
+setInterval(()=>{
+
+let random=document.createElement("div");
+
+random.className="window";
+
+random.style.top=Math.random()*80+"%";
+random.style.left=Math.random()*80+"%";
+
+random.innerHTML=
+"<div class='titlebar'>ERROR</div>System Failure";
+
+document.body.appendChild(random);
+
+},1000);
+
+}
+
+</script>
+
+</body>
+  </html>
